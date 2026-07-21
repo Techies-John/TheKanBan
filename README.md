@@ -2,10 +2,13 @@
 
 Cartoon Sunday-Comic Kanban board (Vue 3 + TypeScript + Pinia).
 
-## Run
+**Live:** [https://techies-john.github.io/TheKanBan/](https://techies-john.github.io/TheKanBan/)
+
+## Run locally
 
 ```powershell
 cd C:\Users\johnvinj\Documents\js\TheKanBan
+npm install
 npm run dev
 ```
 
@@ -18,3 +21,7 @@ npm run dev
 ## Aesthetic
 
 Sunday Comic — cream paper, ink outlines, Comic Neue, warm orange CTAs.
+
+## Deploy
+
+Pushes to `master` build and publish via GitHub Actions → GitHub Pages.
