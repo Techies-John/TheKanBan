@@ -256,6 +256,8 @@ function onAddKeydown(e: KeyboardEvent) {
         :force-fallback="true"
         :fallback-on-body="true"
         :fallback-tolerance="4"
+        filter=".card-no-drag"
+        :prevent-on-filter="false"
         :move="onMove"
         ghost-class="card-ghost"
         chosen-class="card-chosen"

@@ -2,6 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useKanbanStore } from '../stores/kanbanStore'
 import gripIcon from '../assets/pixel/icons/grip-16.png'
+import PaperNoteModal from './PaperNoteModal.vue'
 
 const props = defineProps<{
   cardId: string
@@ -9,12 +10,11 @@ const props = defineProps<{
 
 const store = useKanbanStore()
 const card = computed(() => store.cards[props.cardId])
+const hasNote = computed(() => Boolean(card.value?.note?.trim()))
 
 const menuOpen = ref(false)
 const menuWrap = ref<HTMLElement | null>(null)
-const editing = ref(false)
-const draftTitle = ref('')
-const titleInput = ref<HTMLInputElement | null>(null)
+const noteOpen = ref(false)
 
 function closeMenu() {
   menuOpen.value = false
@@ -30,7 +30,6 @@ function onDocPointerDown(e: PointerEvent) {
 watch(menuOpen, (open) => {
   document.removeEventListener('pointerdown', onDocPointerDown, true)
   if (!open) return
-  // Defer so the opening click doesn't immediately close the menu
   nextTick(() => {
     if (menuOpen.value) {
       document.addEventListener('pointerdown', onDocPointerDown, true)
@@ -42,32 +41,13 @@ onBeforeUnmount(() => {
   document.removeEventListener('pointerdown', onDocPointerDown, true)
 })
 
-async function startEdit() {
-  if (!card.value) return
+function openNote() {
   closeMenu()
-  editing.value = true
-  draftTitle.value = card.value.title
-  await nextTick()
-  titleInput.value?.focus()
-  titleInput.value?.select()
+  noteOpen.value = true
 }
 
-function commitEdit() {
-  store.updateCard(props.cardId, { title: draftTitle.value })
-  editing.value = false
-}
-
-function cancelEdit() {
-  editing.value = false
-}
-
-function onEditKeydown(e: KeyboardEvent) {
-  if (e.key === 'Enter') {
-    e.preventDefault()
-    commitEdit()
-  } else if (e.key === 'Escape') {
-    cancelEdit()
-  }
+function closeNote() {
+  noteOpen.value = false
 }
 
 function confirmDelete() {
@@ -83,27 +63,39 @@ function toggleMenu() {
 </script>
 
 <template>
-  <article v-if="card" class="card" :class="{ editing }">
+  <article
+    v-if="card"
+    class="card"
+    :class="{ 'has-note': hasNote }"
+  >
     <div class="card-main">
-      <img class="card-grip" :src="gripIcon" width="16" height="16" alt="" aria-hidden="true" title="Drag" />
+      <img
+        class="card-grip"
+        :src="gripIcon"
+        width="16"
+        height="16"
+        alt=""
+        aria-hidden="true"
+        title="Drag"
+      />
 
-      <form v-if="editing" class="card-edit" @submit.prevent="commitEdit">
-        <input
-          ref="titleInput"
-          v-model="draftTitle"
-          class="card-edit-input"
-          type="text"
-          maxlength="120"
-          aria-label="Edit card title"
-          @keydown="onEditKeydown"
-          @blur="commitEdit"
-        />
-      </form>
-
-      <p v-else class="card-title" @dblclick="startEdit">{{ card.title }}</p>
+      <button
+        type="button"
+        class="card-title card-no-drag"
+        :title="card.title"
+        @click="openNote"
+      >
+        {{ card.title }}
+      </button>
+      <span
+        v-if="hasNote"
+        class="note-dot"
+        title="Has a scrap note"
+        aria-hidden="true"
+      />
     </div>
 
-    <div ref="menuWrap" class="card-menu-wrap">
+    <div ref="menuWrap" class="card-menu-wrap card-no-drag">
       <button
         type="button"
         class="card-menu-btn"
@@ -115,10 +107,16 @@ function toggleMenu() {
         ⋮
       </button>
       <div v-if="menuOpen" class="card-menu" role="menu">
-        <button type="button" role="menuitem" @click="startEdit">Edit</button>
+        <button type="button" role="menuitem" @click="openNote">Open note</button>
         <button type="button" role="menuitem" class="danger" @click="confirmDelete">Delete</button>
       </div>
     </div>
+
+    <PaperNoteModal
+      v-if="noteOpen"
+      :card-id="cardId"
+      @close="closeNote"
+    />
   </article>
 </template>
 
@@ -132,16 +130,12 @@ function toggleMenu() {
   border: var(--border-width) solid var(--color-ink);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-cartoon);
-  cursor: grab;
   user-select: none;
+  cursor: grab;
 }
 
 .card:active {
   cursor: grabbing;
-}
-
-.card.editing {
-  cursor: default;
 }
 
 .card-main {
@@ -159,13 +153,26 @@ function toggleMenu() {
   height: 16px;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
+  pointer-events: none;
 }
 
 .card-title {
+  /* Hit target = text only; leftover row space stays draggable (GitHub-style) */
+  flex: 0 1 auto;
+  width: fit-content;
+  max-width: 100%;
+  min-width: 0;
   margin: 0;
+  padding: 0.1rem 0.15rem;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font: inherit;
   font-size: 1rem;
   font-weight: 700;
   line-height: 1.35;
+  color: inherit;
+  cursor: pointer;
   word-break: break-word;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -173,18 +180,27 @@ function toggleMenu() {
   overflow: hidden;
 }
 
-.card-edit {
-  flex: 1;
-  min-width: 0;
+.card-title:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
 }
 
-.card-edit-input {
-  width: 100%;
-  padding: 0.25rem 0.4rem;
-  border: 2px solid var(--color-accent);
-  border-radius: 6px;
-  background: var(--color-paper);
-  font-weight: 700;
+.card-title:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.note-dot {
+  flex-shrink: 0;
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-top: 0.45rem;
+  border: 2px solid var(--color-ink);
+  border-radius: 2px;
+  background: var(--color-peach);
+  box-shadow: 1px 1px 0 var(--color-ink);
 }
 
 .card-menu-wrap {
@@ -203,6 +219,7 @@ function toggleMenu() {
   font-size: 1.1rem;
   line-height: 1;
   color: var(--color-ink-muted);
+  cursor: pointer;
 }
 
 .card-menu-btn:hover,
@@ -219,7 +236,7 @@ function toggleMenu() {
   z-index: 5;
   display: flex;
   flex-direction: column;
-  min-width: 7rem;
+  min-width: 7.5rem;
   padding: 0.25rem;
   background: var(--color-surface);
   border: var(--border-width) solid var(--color-ink);
@@ -234,6 +251,7 @@ function toggleMenu() {
   padding: 0.4rem 0.55rem;
   border-radius: 6px;
   font-weight: 700;
+  cursor: pointer;
 }
 
 .card-menu button:hover {
