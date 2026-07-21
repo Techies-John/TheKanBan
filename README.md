@@ -4,6 +4,11 @@ Cartoon Sunday-Comic Kanban board (Vue 3 + TypeScript + Pinia).
 
 **Live (latest official release):** [https://techies-john.github.io/TheKanBan/](https://techies-john.github.io/TheKanBan/)
 
+## Support
+
+Enjoying the Sunday paper? A ⭐ keeps the ink flowing — [star the repo](https://github.com/Techies-John/TheKanBan).  
+Want to tip the cartoonist? [GitHub Sponsors](https://github.com/sponsors/Techies-John).
+
 ## Run locally
 
 ```powershell
