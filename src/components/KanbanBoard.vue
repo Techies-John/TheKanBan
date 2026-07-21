@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { useKanbanStore } from '../stores/kanbanStore.ts'
+import { APP_VERSION } from '../version'
 import KanbanColumn from './KanbanColumn.vue'
 import faviconMark from '../assets/pixel/icons/favicon-16.png'
 
@@ -21,6 +22,7 @@ const { columns, totalCards } = storeToRefs(store)
           aria-hidden="true"
         />
         <h1 class="board-title">TheKanBan</h1>
+        <span class="board-version" :title="`TheKanBan v${APP_VERSION}`">v{{ APP_VERSION }}</span>
       </div>
       <p class="board-meta">{{ totalCards }} card{{ totalCards === 1 ? '' : 's' }}</p>
     </header>
@@ -82,6 +84,21 @@ const { columns, totalCards } = storeToRefs(store)
   font-size: clamp(1.75rem, 4vw, 2.25rem);
   letter-spacing: 0.02em;
   line-height: 1.1;
+}
+
+.board-version {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  padding: 0.15rem 0.45rem;
+  border: 2px solid var(--color-ink);
+  border-radius: 6px;
+  background: var(--color-peach);
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  box-shadow: 2px 2px 0 var(--color-ink);
 }
 
 .board-meta {

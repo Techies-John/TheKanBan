@@ -2,7 +2,7 @@
 
 Cartoon Sunday-Comic Kanban board (Vue 3 + TypeScript + Pinia).
 
-**Live:** [https://techies-john.github.io/TheKanBan/](https://techies-john.github.io/TheKanBan/)
+**Live (latest official release):** [https://techies-john.github.io/TheKanBan/](https://techies-john.github.io/TheKanBan/)
 
 ## Run locally
 
@@ -22,6 +22,8 @@ npm run dev
 
 Sunday Comic — cream paper, ink outlines, Comic Neue, warm orange CTAs.
 
-## Deploy
+## Versions & deploy
 
-Pushes to `master` build and publish via GitHub Actions → GitHub Pages.
+- Develop on `master` freely — pushes do **not** update the live site.
+- Cut an official version: bump `package.json` version → tag `vX.Y.Z` → publish a GitHub Release.
+- GitHub Actions builds that release and deploys **GitHub Pages** (release-only).

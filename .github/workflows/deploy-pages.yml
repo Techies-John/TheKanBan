@@ -1,8 +1,8 @@
 name: Deploy GitHub Pages
 
 on:
-  push:
-    branches: [master]
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:
@@ -18,8 +18,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout release commit
         uses: actions/checkout@v4
+        with:
+          # Official live site builds the tagged release, not floating master
+          ref: ${{ github.event.release.tag_name || github.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
