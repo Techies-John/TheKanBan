@@ -11,9 +11,19 @@ let active = false
 let rejectArmed = false
 /** Column that currently "owns" the dragged card (sticky until clearly inside another). */
 let stickyColumnId: string | null = null
+/** Suppress title "click → open note" briefly after a Sortable drag. */
+let suppressClickUntil = 0
 
 export function isDragSessionActive(): boolean {
   return active
+}
+
+export function markDragGesture(): void {
+  suppressClickUntil = Date.now() + 450
+}
+
+export function shouldSuppressCardTitleClick(): boolean {
+  return active || Date.now() < suppressClickUntil
 }
 
 export function beginDragSession(fromColumnId: string): void {
@@ -21,6 +31,7 @@ export function beginDragSession(fromColumnId: string): void {
   rejectArmed = false
   stickyColumnId = fromColumnId
   pendingByColumn.clear()
+  markDragGesture()
 }
 
 export function noteColumnIds(columnId: string, ids: string[]): void {

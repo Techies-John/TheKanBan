@@ -18,13 +18,19 @@ PALETTE = {
     ".": None,
     "C": (255, 248, 231, 255),  # cream
     "I": (45, 42, 38, 255),  # ink
-    "R": (255, 107, 107, 255),  # coral
-    "M": (78, 205, 196, 255),  # mint
-    "Y": (255, 230, 109, 255),  # yellow
+    "R": (255, 107, 107, 255),  # coral (legacy sprites)
+    "M": (78, 205, 196, 255),  # mint (legacy)
+    "Y": (255, 230, 109, 255),  # yellow (legacy)
     "G": (149, 225, 211, 255),  # soft green
     "L": (199, 206, 234, 255),  # lilac
     "W": (255, 255, 255, 255),  # white
     "O": (232, 93, 4, 255),  # warm orange
+    # Softer Sunday-paper accents (column chip)
+    "A": (255, 224, 194, 255),  # peach
+    "B": (200, 232, 245, 255),  # sky
+    "D": (197, 236, 216, 255),  # mint wash
+    "E": (255, 248, 231, 255),  # paper cream
+    "J": (92, 87, 79, 255),  # softer ink outline (less harsh than pure I)
 }
 
 
@@ -77,22 +83,23 @@ def grip_16() -> Image.Image:
 
 
 def column_accent_16() -> Image.Image:
+    # Pastel stripes + noticeably rounded pixel corners + softer ink (J)
     return paint(
         [
             "................",
-            ".IIIIIIIIIIIIII.",
-            ".IRRRMMMYYYWWWI.",
-            ".IRRRMMMYYYWWWI.",
-            ".IRRRMMMYYYWWWI.",
-            ".IRRRMMMYYYWWWI.",
-            ".IRRRMMMYYYWWWI.",
-            ".IRRRMMMYYYWWWI.",
-            ".IRRRMMMYYYWWWI.",
-            ".IRRRMMMYYYWWWI.",
-            ".IRRRMMMYYYWWWI.",
-            ".IRRRMMMYYYWWWI.",
-            ".IRRRMMMYYYWWWI.",
-            ".IIIIIIIIIIIIII.",
+            "...JJJJJJJJJJ...",
+            "..JAAAABBBBDJ...",
+            ".JAAAABBBBDDDDJ.",
+            ".JAAAABBBBDDDDJ.",
+            ".JAAAABBBBDDDDJ.",
+            ".JAAAABBBBDDDDJ.",
+            ".JAAAABBBBDDDDJ.",
+            ".JAAAABBBBDDDDJ.",
+            ".JAAAABBBBDDDDJ.",
+            ".JAAAABBBBDDDDJ.",
+            ".JAAAABBBBDDDDJ.",
+            "..JAAAABBBBDJ...",
+            "...JJJJJJJJJJ...",
             "................",
             "................",
         ]

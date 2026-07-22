@@ -19,9 +19,9 @@ import {
   isDragSessionActive,
   noteColumnIds,
 } from '../lib/dragSession.ts'
+import { markCardsLandingIntoDoing } from '../lib/doingLand.ts'
 import KanbanCard from './KanbanCard.vue'
 import KanbanWipBanter from './KanbanWipBanter.vue'
-import columnAccent from '../assets/pixel/ui/column-accent-16.png'
 import emptyDoodle from '../assets/pixel/ui/empty-column-64x48.png'
 import addCardIcon from '../assets/pixel/icons/add-card-32.png'
 
@@ -94,7 +94,9 @@ const banterVariant = computed<'vibe' | 'reject'>(() =>
   rejectMessage.value ? 'reject' : 'vibe',
 )
 
-onBeforeUnmount(() => clearRejectTimer())
+onBeforeUnmount(() => {
+  clearRejectTimer()
+})
 
 function canPutInColumn(): boolean {
   if (props.column.id !== DOING_COLUMN_ID) return true
@@ -127,11 +129,18 @@ function onLocalIdsUpdate(ids: string[]) {
 }
 
 function flushDragToStore() {
+  const doingBefore = new Set(store.getCardIds(DOING_COLUMN_ID))
+
   endDragSession((columnId, ids) => {
     store.setCardIds(columnId, ids)
   })
   // Resync this column from store (handles WIP reject / no-op)
   localIds.value = [...store.getCardIds(props.column.id)]
+
+  const entered = store
+    .getCardIds(DOING_COLUMN_ID)
+    .filter((id) => !doingBefore.has(id))
+  markCardsLandingIntoDoing(entered)
 }
 
 function onDragEnd() {
@@ -201,7 +210,7 @@ function onAddKeydown(e: KeyboardEvent) {
   >
     <header class="column-header">
       <div class="column-heading">
-        <img class="pixel-icon" :src="columnAccent" width="16" height="16" alt="" aria-hidden="true" />
+        <span class="column-bullet" :class="`bullet-${tint}`" aria-hidden="true" />
         <h2 class="column-title">{{ column.title }}</h2>
         <span v-if="isDoing" class="wip-tag" title="Work in progress limit">WIP {{ DOING_WIP_LIMIT }}</span>
       </div>
@@ -267,7 +276,12 @@ function onAddKeydown(e: KeyboardEvent) {
         @start="onDragStart"
         @end="onDragEnd"
       >
-        <KanbanCard v-for="id in localIds" :key="id" :card-id="id" />
+        <KanbanCard
+          v-for="id in localIds"
+          :key="id"
+          :card-id="id"
+          :in-doing="isDoing"
+        />
       </VueDraggable>
     </div>
 
@@ -359,6 +373,27 @@ function onAddKeydown(e: KeyboardEvent) {
   flex-wrap: wrap;
 }
 
+.column-bullet {
+  flex-shrink: 0;
+  width: 0.7rem;
+  height: 0.7rem;
+  border: 2px solid var(--color-ink);
+  border-radius: 999px;
+  box-shadow: 1.5px 1.5px 0 var(--color-ink);
+}
+
+.column-bullet.bullet-peach {
+  background: var(--color-peach);
+}
+
+.column-bullet.bullet-sky {
+  background: var(--color-sky);
+}
+
+.column-bullet.bullet-mint {
+  background: var(--color-mint);
+}
+
 .column-title {
   margin: 0;
   font-family: var(--font-display);
@@ -424,13 +459,13 @@ function onAddKeydown(e: KeyboardEvent) {
 .column-list {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.8rem;
   flex: 1 1 0;
   min-height: 0;
   height: 100%;
   overflow-x: hidden;
   overflow-y: auto;
-  padding-right: 0.2rem;
+  padding: 0.15rem 0.2rem 0.25rem 0.1rem;
   scrollbar-width: auto;
   scrollbar-color: var(--color-accent) var(--color-paper);
 }
